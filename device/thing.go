@@ -9,7 +9,7 @@ import (
 	"path"
 	"time"
 
-	"github.com/eclipse/paho.mqtt.golang"
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 // Thing a structure for working with the AWS IoT device shadows
@@ -43,7 +43,7 @@ type ShadowError = Shadow
 func NewThing(keyPair KeyPair, awsEndpoint string, thingName ThingName) (*Thing, error) {
 	tlsCert, err := tls.LoadX509KeyPair(keyPair.CertificatePath, keyPair.PrivateKeyPath)
 	if err != nil {
-		return nil ,fmt.Errorf("failed to load the certificates: %v", err)
+		return nil, fmt.Errorf("failed to load the certificates: %v", err)
 	}
 
 	certs := x509.NewCertPool()
@@ -249,6 +249,18 @@ func (t *Thing) DeleteThingShadow() error {
 func (t *Thing) PublishToCustomTopic(payload Shadow, topic string) error {
 	token := t.client.Publish(
 		path.Join("$aws/things", t.thingName, topic),
+		0,
+		false,
+		[]byte(payload),
+	)
+	token.Wait()
+	return token.Error()
+}
+
+// Publish publishes an async message to arbitrary topic.
+func (t *Thing) Publish(payload Shadow, topic string) error {
+	token := t.client.Publish(
+		topic,
 		0,
 		false,
 		[]byte(payload),
