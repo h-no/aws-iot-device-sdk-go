@@ -64,10 +64,8 @@ func NewThing(keyPair KeyPair, awsEndpoint string, thingName ThingName) (*Thing,
 		return nil, err
 	}
 
-	awsServerURL := fmt.Sprintf("ssl://%s:8883", awsEndpoint)
-
 	mqttOpts := mqtt.NewClientOptions()
-	mqttOpts.AddBroker(awsServerURL)
+	mqttOpts.AddBroker(awsEndpoint)
 	mqttOpts.SetMaxReconnectInterval(1 * time.Second)
 	mqttOpts.SetClientID(string(thingName))
 	mqttOpts.SetTLSConfig(tlsConfig)
