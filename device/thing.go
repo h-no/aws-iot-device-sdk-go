@@ -28,6 +28,13 @@ type KeyPair struct {
 	CACertificatePath string
 }
 
+// AWSIoTEndpoint the structure describes what AWS IoT endpoint to connect to
+type AWSIoTEndpoint struct {
+	Protocol string
+	Hostname string
+	Port     int
+}
+
 // Shadow device shadow data
 type Shadow []byte
 
@@ -43,7 +50,7 @@ func (s Shadow) String() string {
 type ShadowError = Shadow
 
 // NewThing returns a new instance of Thing
-func NewThing(keyPair KeyPair, awsEndpoint string, thingName ThingName) (*Thing, error) {
+func NewThing(keyPair KeyPair, awsEndpoint AWSIoTEndpoint, thingName ThingName) (*Thing, error) {
 	tlsCert, err := tls.LoadX509KeyPair(keyPair.CertificatePath, keyPair.PrivateKeyPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load the certificates: %v", err)
@@ -62,6 +69,7 @@ func NewThing(keyPair KeyPair, awsEndpoint string, thingName ThingName) (*Thing,
 		Certificates: []tls.Certificate{tlsCert},
 		RootCAs:      certs,
 		NextProtos:   []string{"x-amzn-mqtt-ca"},
+		ServerName:   awsEndpoint.Hostname,
 	}
 
 	if err != nil {
@@ -69,7 +77,7 @@ func NewThing(keyPair KeyPair, awsEndpoint string, thingName ThingName) (*Thing,
 	}
 
 	mqttOpts := mqtt.NewClientOptions()
-	mqttOpts.AddBroker(awsEndpoint)
+	mqttOpts.AddBroker(fmt.Sprintf("%s://%s:%d", awsEndpoint.Protocol, awsEndpoint.Hostname, awsEndpoint.Port))
 	mqttOpts.SetMaxReconnectInterval(1 * time.Second)
 	mqttOpts.SetClientID(string(thingName))
 	mqttOpts.SetTLSConfig(tlsConfig)
