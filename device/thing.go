@@ -61,6 +61,7 @@ func NewThing(keyPair KeyPair, awsEndpoint string, thingName ThingName) (*Thing,
 	tlsConfig := &tls.Config{
 		Certificates: []tls.Certificate{tlsCert},
 		RootCAs:      certs,
+		NextProtos:   []string{"x-amzn-mqtt-ca"},
 	}
 
 	if err != nil {
