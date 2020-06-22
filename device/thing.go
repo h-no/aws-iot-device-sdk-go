@@ -31,6 +31,9 @@ type KeyPair struct {
 // Shadow device shadow data
 type Shadow []byte
 
+// Payload message
+type Payload []byte
+
 // String converts the Shadow to string
 func (s Shadow) String() string {
 	return string(s)
@@ -256,7 +259,7 @@ func (t *Thing) PublishToCustomTopic(payload Shadow, topic string) error {
 }
 
 // Publish publishes an async message to arbitrary topic.
-func (t *Thing) Publish(payload Shadow, topic string) error {
+func (t *Thing) Publish(payload Payload, topic string) error {
 	token := t.client.Publish(
 		topic,
 		0,
